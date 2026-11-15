@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Private Media Vault</title>
+    <style>
+        /* বেসিক রিসেট এবং ফন্ট */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f4f6f9;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* --- লগিন স্ক্রিন (শর্ত ২, ৩, ৪, ৫) --- */
+        #login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        /* সম্পূর্ণ ছবিটি মোবাইল স্ক্রিনে না কেটে দেখানোর জন্য */
+        #cover-photo {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            user-select: none;
+        }
+
+        /* উপরের ডান কর্ণারে ছোট করে কালো রঙে PM (কোনো ব্যাকগ্রাউন্ড ছাড়া) */
+        #secret-trigger {
+            position: fixed;
+            top: 10px;
+            right: 12px;
+            color: #000000;
+            background: transparent;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            z-index: 1002;
+            user-select: none;
+            padding: 4px;
+        }
+
+        /* লুকানো প্রফেশনাল লগিন বক্স */
+        #login-modal {
+            display: none; /* শুরুতে লুকানো থাকবে */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(6px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1005;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .login-box {
+            background: #ffffff;
+            padding: 30px 25px;
+            border-radius: 16px;
+            width: 88%;
+            max-width: 340px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+            text-align: center;
+            position: relative;
+        }
+
+        .login-box h2 {
+            font-size: 20px;
+            color: #1e293b;
+            margin-bottom: 6px;
+        }
+
+        .login-box p {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+            margin-bottom: 15px;
+            text-align: center;
+            letter-spacing: 2px;
+            transition: border-color 0.2s;
+        }
+
+        .login-box input:focus {
+            border-color: #2563eb;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .login-btn:active {
+            transform: scale(0.98);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 10px;
+            right: 14px;
+            font-size: 20px;
+            color: #94a3b8;
+            cursor: pointer;
+        }
+
+        #error-msg {
+            color: #ef4444;
+            font-size: 13px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        /* --- হোম পেইজ ও ড্যাশবোর্ড (শর্ত ৬, ৮) --- */
+        #app-screen {
+            display: none;
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+
+        header {
+            background: #ffffff;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        header h1 {
+            font-size: 19px;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logout-btn {
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* ফোল্ডার গ্রিড ডিজাইন (হুবহু ফোল্ডারের মতো দেখতে) */
+        .folder-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .folder-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 22px 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid #e2e8f0;
+            position: relative;
+        }
+
+        .folder-card:hover, .folder-card:active {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        /* বাস্তবসম্মত ফোল্ডার আইকন CSS */
+        .folder-icon {
+            width: 72px;
+            height: 54px;
+            background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%);
+            border-radius: 0 10px 10px 10px;
+            margin: 0 auto 14px;
+            position: relative;
+            box-shadow: 0 4px 8px rgba(245, 158, 11, 0.25);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .folder-icon::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 0;
+            width: 30px;
+            height: 9px;
+            background: #fbbf24;
+            border-radius: 6px 6px 0 0;
+        }
+
+        .folder-icon span {
+            font-size: 22px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .folder-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        /* --- মিডিয়া ভিউয়ার সেকশন (শর্ত ৯, ১০) --- */
+        #media-view {
+            display: none;
+        }
+
+        .nav-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .back-btn {
+            background: #e2e8f0;
+            color: #1e293b;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        #current-folder-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        /* ফটো গ্রিড */
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        @media (min-width: 600px) {
+            .photo-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .media-card {
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .photo-thumb {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            cursor: pointer;
+            background: #e2e8f0;
+        }
+
+        .media-info {
+            padding: 10px;
+        }
+
+        .media-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 4px;
+        }
+
+        .media-date {
+            font-size: 11px;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* ভিডিও এবং অডিও লিস্ট স্টাইল */
+        .list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .video-card, .audio-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .video-player {
+            width: 100%;
+            border-radius: 8px;
+            max-height: 280px;
+            background: #000;
+            margin-bottom: 10px;
+        }
+
+        .audio-player {
+            width: 100%;
+            height: 40px;
+            margin-top: 10px;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .download-link {
+            background: #eff6ff;
+            color: #2563eb;
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* ফুলস্ক্রিন ফটো লাইটবক্স */
+        #lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.92);
+            z-index: 2000;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        #lightbox img {
+            max-width: 100%;
+            max-height: 78vh;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .lightbox-controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .lb-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+        }
+
+        .lb-download {
+            background: #2563eb;
+            color: white;
+        }
+
+        .lb-close {
+            background: #334155;
+            color: white;
+        }
+
+        .loader {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+            font-size: 15px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ১. লগিন স্ক্রিন -->
+    <div id="login-screen">
+        <!-- ২য় রিপোজিটরি থেকে photo1.jpg লোড হবে -->
+        <img id="cover-photo" src="" alt="Cover">
+        
+        <!-- উপরের ডান কর্ণারে ছোট কালো PM লেখা -->
+        <div id="secret-trigger">PM</div>
+    </div>
+
+    <!-- গোপন লগিন পপআপ বক্স -->
+    <div id="login-modal">
+        <div class="login-box">
+            <span class="close-modal" onclick="closeLoginModal()">&times;</span>
+            <h2>স্বাগতম</h2>
+            <p>প্রবেশ করতে আপনার পাসওয়ার্ড দিন</p>
+            <input type="password" id="password-input" placeholder="•••••" onkeypress="handleEnter(event)">
+            <button class="login-btn" onclick="checkPassword()">লগিন করুন</button>
+            <div id="error-msg">ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।</div>
+        </div>
+    </div>
+
+    <!-- ২. মূল অ্যাপ ও হোম পেইজ -->
+    <div id="app-screen">
+        <header>
+            <h1>🗂️ আমার গ্যালারি</h1>
+            <button class="logout-btn" onclick="logout()">লগআউট</button>
+        </header>
+
+        <div class="container">
+            <!-- ৩টি ফোল্ডার ভিউ -->
+            <div id="folders-home">
+                <div class="folder-grid">
+                    <!-- ১ম ফোল্ডার: Photo -->
+                    <div class="folder-card" onclick="openFolder('Photo')">
+                        <div class="folder-icon"><span>🖼️</span></div>
+                        <div class="folder-name">Photo</div>
+                    </div>
+
+                    <!-- ২য় ফোল্ডার: video -->
+                    <div class="folder-card" onclick="openFolder('video')">
+                        <div class="folder-icon"><span>🎬</span></div>
+                        <div class="folder-name">video</div>
+                    </div>
+
+                    <!-- ৩য় ফোল্ডার: Audio -->
+                    <div class="folder-card" onclick="openFolder('Audio')">
+                        <div class="folder-icon"><span>🎵</span></div>
+                        <div class="folder-name">Audio</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ফোল্ডারের ভেতরের ফাইল দেখার ভিউ -->
+            <div id="media-view">
+                <div class="nav-bar">
+                    <button class="back-btn" onclick="goBackHome()">← ফিরে যান</button>
+                    <div id="current-folder-title">Folder</div>
+                </div>
+                <div id="media-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ফুলস্ক্রিন ছবি ভিউয়ার -->
+    <div id="lightbox">
+        <img id="lightbox-img" src="" alt="Full View">
+        <div class="lightbox-controls">
+            <a id="lightbox-download" class="lb-btn lb-download" href="#" download target="_blank">⬇️ ডাউনলোড</a>
+            <button class="lb-btn lb-close" onclick="closeLightbox()">বন্ধ করুন</button>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // এখানে আপনার GITHUB তথ্য বসান (অবশ্যই পরিবর্তন করবেন)
+        // ==========================================
+        const GITHUB_USERNAME = "palashmahmod"; 
+        const MEDIA_REPO_NAME = "my-media-storage"; 
+        // ==========================================
+
+        const CORRECT_PASSWORD = "pm111";
+        const SESSION_TIMEOUT = 10 * 60 * 1000; // ১০ মিনিট (মিলিসেকেন্ডে)
+
+        // কভার ফটো (photo1.jpg) সেট করা
+        const coverPhotoUrl = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${MEDIA_REPO_NAME}/main/Photo/photo1.jpg`;
+        document.getElementById("cover-photo").src = coverPhotoUrl;
+
+        // ১. PM লেখায় ৩ বার ক্লিক ডিটেকশন
+        let clickCount = 0;
+        let clickTimer = null;
+
+        document.getElementById("secret-trigger").addEventListener("click", function() {
+            clickCount++;
+            clearTimeout(clickTimer);
+
+            if (clickCount === 3) {
+                clickCount = 0;
+                document.getElementById("login-modal").style.display = "flex";
+                document.getElementById("password-input").focus();
+            } else {
+                // ২ সেকেন্ডের মধ্যে ৩ বার ক্লিক না করলে কাউন্ট রিসেট হবে
+                clickTimer = setTimeout(() => {
+                    clickCount = 0;
+                }, 2000);
+            }
+        });
+
+        function closeLoginModal() {
+            document.getElementById("login-modal").style.display = "none";
+            document.getElementById("error-msg").style.display = "none";
+            document.getElementById("password-input").value = "";
+        }
+
+        function handleEnter(e) {
+            if (e.key === "Enter") checkPassword();
+        }
+
+        // ২. পাসওয়ার্ড চেক এবং লগিন সেশন তৈরি
+        function checkPassword() {
+            const input = document.getElementById("password-input").value;
+            if (input === CORRECT_PASSWORD) {
+                localStorage.setItem("isLoggedIn", "true");
+                localStorage.setItem("loginTimestamp", Date.now().toString());
+                closeLoginModal();
+                showAppScreen();
+            } else {
+                document.getElementById("error-msg").style.display = "block";
+            }
+        }
+
+        function showAppScreen() {
+            document.getElementById("login-screen").style.display = "none";
+            document.getElementById("app-screen").style.display = "block";
+        }
+
+        // ৩. লগআউট এবং ১০ মিনিট অটো-লগআউট সিস্টেম
+        function logout() {
+            localStorage.removeItem("isLoggedIn");
+            localStorage.removeItem("loginTimestamp");
+            document.getElementById("app-screen").style.display = "none";
+            document.getElementById("login-screen").style.display = "flex";
+            goBackHome();
+        }
+
+        function checkSession() {
+            const isLoggedIn = localStorage.getItem("isLoggedIn");
+            const loginTime = parseInt(localStorage.getItem("loginTimestamp") || "0", 10);
+
+            if (isLoggedIn === "true") {
+                const currentTime = Date.now();
+                if (currentTime - loginTime > SESSION_TIMEOUT) {
+                    // ১০ মিনিট পার হয়ে গেলে অটো লগআউট
+                    logout();
+                } else {
+                    showAppScreen();
+                }
+            }
+        }
+
+        // পেইজ লোড হলে এবং প্রতি ৫ সেকেন্ড পরপর সেশন চেক করবে
+        window.onload = checkSession;
+        setInterval(checkSession, 5000);
+
+        // ৪. ফোল্ডার নেভিগেশন
+        function goBackHome() {
+            document.getElementById("media-view").style.display = "none";
+            document.getElementById("folders-home").style.display = "block";
+            document.getElementById("media-content").innerHTML = "";
+        }
+
+        // ৫. GitHub API থেকে ফাইল, নাম এবং আপলোডের তারিখ সংগ্রহ
+        async function openFolder(folderName) {
+            document.getElementById("folders-home").style.display = "none";
+            document.getElementById("media-view").style.display = "block";
+            document.getElementById("current-folder-title").innerText = "📁 " + folderName;
+            
+            const contentDiv = document.getElementById("media-content");
+            contentDiv.innerHTML = `<div class="loader">ফাইল লোড হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...</div>`;
+
+            const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${MEDIA_REPO_NAME}/contents/${folderName}`;
+
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error("ফোল্ডার খুঁজে পাওয়া যায়নি বা খালি রয়েছে।");
+                
+                let files = await response.json();
+
+                // Photo ফোল্ডার থেকে লগিন কভার ছবি (photo1.jpg) বাদ দেওয়া হলো
+                if (folderName === "Photo") {
+                    files = files.filter(file => file.name.toLowerCase() !== "photo1.jpg" && file.type === "file");
+                } else {
+                    files = files.filter(file => file.type === "file");
+                }
+
+                if (files.length === 0) {
+                    contentDiv.innerHTML = `<div class="loader">এই ফোল্ডারে কোনো ফাইল নেই।</div>`;
+                    return;
+                }
+
+                // প্রতিটি ফাইলের আপলোডের তারিখ বের করা
+                const filesWithDates = await Promise.all(files.map(async (file) => {
+                    const uploadDate = await getFileUploadDate(folderName, file.name);
+                    return { ...file, uploadDate };
+                }));
+
+                renderMedia(folderName, filesWithDates);
+
+            } catch (error) {
+                contentDiv.innerHTML = `<div class="loader">ত্রুটি: ফাইল লোড করা সম্ভব হয়নি। রিপোজিটরি এবং ফোল্ডারের নাম ঠিক আছে কিনা যাচাই করুন।</div>`;
+            }
+        }
+
+        // GitHub Commits API থেকে আপলোডের তারিখ বের করার ফাংশন
+        async function getFileUploadDate(folderName, fileName) {
+            try {
+                const commitUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${MEDIA_REPO_NAME}/commits?path=${folderName}/${encodeURIComponent(fileName)}&page=1&per_page=1`;
+                const res = await fetch(commitUrl);
+                const commits = await res.json();
+                if (commits && commits.length > 0) {
+                    const dateObj = new Date(commits[0].commit.author.date);
+                    return dateObj.toLocaleDateString('bn-BD', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric'
+                    });
+                }
+            } catch (e) {
+                return "তারিখ পাওয়া যায়নি";
+            }
+            return "অজানা তারিখ";
+        }
+
+        // ৬. ফাইলগুলো স্ক্রিনে সুন্দরভাবে সাজানো
+        function renderMedia(folderName, files) {
+            const contentDiv = document.getElementById("media-content");
+            contentDiv.innerHTML = "";
+
+            if (folderName === "Photo") {
+                const grid = document.createElement("div");
+                grid.className = "photo-grid";
+
+                files.forEach(file => {
+                    const card = document.createElement("div");
+                    card.className = "media-card";
+                    card.innerHTML = `
+                        <img class="photo-thumb" src="${file.download_url}" alt="${file.name}" onclick="openLightbox('${file.download_url}', '${file.name}')">
+                        <div class="media-info">
+                            <div class="media-title" title="${file.name}">${file.name}</div>
+                            <div class="media-date">📅 ${file.uploadDate}</div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+                contentDiv.appendChild(grid);
+
+            } else if (folderName === "video") {
+                const list = document.createElement("div");
+                list.className = "list-container";
+
+                files.forEach(file => {
+                    const card = document.createElement("div");
+                    card.className = "video-card";
+                    card.innerHTML = `
+                        <video class="video-player" controls preload="metadata">
+                            <source src="${file.download_url}">
+                            আপনার ব্রাউজার ভিডিও সাপোর্ট করে না।
+                        </video>
+                        <div class="media-title">${file.name}</div>
+                        <div class="card-footer">
+                            <span class="media-date">📅 ${file.uploadDate}</span>
+                            <a class="download-link" href="${file.download_url}" download="${file.name}" target="_blank">⬇️ ডাউনলোড</a>
+                        </div>
+                    `;
+                    list.appendChild(card);
+                });
+                contentDiv.appendChild(list);
+
+            } else if (folderName === "Audio") {
+                const list = document.createElement("div");
+                list.className = "list-container";
+
+                files.forEach(file => {
+                    const card = document.createElement("div");
+                    card.className = "audio-card";
+                    card.innerHTML = `
+                        <div class="media-title">🎵 ${file.name}</div>
+                        <div class="media-date" style="margin-top:4px;">📅 ${file.uploadDate}</div>
+                        <audio class="audio-player" controls preload="metadata">
+                            <source src="${file.download_url}">
+                            আপনার ব্রাউজার অডিও সাপোর্ট করে না।
+                        </audio>
+                    `;
+                    list.appendChild(card);
+                });
+                contentDiv.appendChild(list);
+            }
+        }
+
+        // ৭. ফুলস্ক্রিন ফটো লাইটবক্স ফাংশন
+        function openLightbox(url, name) {
+            document.getElementById("lightbox-img").src = url;
+            const dlBtn = document.getElementById("lightbox-download");
+            dlBtn.href = url;
+            dlBtn.setAttribute("download", name);
+            document.getElementById("lightbox").style.display = "flex";
+        }
+
+        function closeLightbox() {
+            document.getElementById("lightbox").style.display = "none";
+            document.getElementById("lightbox-img").src = "";
+        }
+    </script>
+</body>
+</html>
