@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Private Media Vault</title>
     <style>
-        /* বেসিক রিসেট এবং ফন্ট */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -19,7 +18,6 @@
             overflow-x: hidden;
         }
 
-        /* --- লগিন স্ক্রিন (শর্ত ২, ৩, ৪, ৫) --- */
         #login-screen {
             position: fixed;
             top: 0;
@@ -33,7 +31,6 @@
             z-index: 1000;
         }
 
-        /* সম্পূর্ণ ছবিটি মোবাইল স্ক্রিনে না কেটে দেখানোর জন্য */
         #cover-photo {
             max-width: 100%;
             max-height: 100%;
@@ -43,7 +40,6 @@
             user-select: none;
         }
 
-        /* উপরের ডান কর্ণারে ছোট করে কালো রঙে PM (কোনো ব্যাকগ্রাউন্ড ছাড়া) */
         #secret-trigger {
             position: fixed;
             top: 10px;
@@ -59,9 +55,8 @@
             padding: 4px;
         }
 
-        /* লুকানো প্রফেশনাল লগিন বক্স */
         #login-modal {
-            display: none; /* শুরুতে লুকানো থাকবে */
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
@@ -128,10 +123,6 @@
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
         }
 
-        .login-btn:active {
-            transform: scale(0.98);
-        }
-
         .close-modal {
             position: absolute;
             top: 10px;
@@ -148,7 +139,6 @@
             display: none;
         }
 
-        /* --- হোম পেইজ ও ড্যাশবোর্ড (শর্ত ৬, ৮) --- */
         #app-screen {
             display: none;
             min-height: 100vh;
@@ -192,7 +182,6 @@
             margin: 0 auto;
         }
 
-        /* ফোল্ডার গ্রিড ডিজাইন (হুবহু ফোল্ডারের মতো দেখতে) */
         .folder-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -209,7 +198,6 @@
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
             border: 1px solid #e2e8f0;
-            position: relative;
         }
 
         .folder-card:hover, .folder-card:active {
@@ -217,7 +205,6 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
         }
 
-        /* বাস্তবসম্মত ফোল্ডার আইকন CSS */
         .folder-icon {
             width: 72px;
             height: 54px;
@@ -248,12 +235,14 @@
         }
 
         .folder-name {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
             color: #1e293b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        /* --- মিডিয়া ভিউয়ার সেকশন (শর্ত ৯, ১০) --- */
         #media-view {
             display: none;
         }
@@ -282,7 +271,6 @@
             color: #0f172a;
         }
 
-        /* ফটো গ্রিড */
         .photo-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -335,7 +323,6 @@
             gap: 4px;
         }
 
-        /* ভিডিও এবং অডিও লিস্ট স্টাইল */
         .list-container {
             display: flex;
             flex-direction: column;
@@ -381,7 +368,6 @@
             font-weight: 600;
         }
 
-        /* ফুলস্ক্রিন ফটো লাইটবক্স */
         #lightbox {
             display: none;
             position: fixed;
@@ -445,16 +431,11 @@
 </head>
 <body>
 
-    <!-- ১. লগিন স্ক্রিন -->
     <div id="login-screen">
-        <!-- ২য় রিপোজিটরি থেকে photo1.jpg লোড হবে -->
         <img id="cover-photo" src="" alt="Cover">
-        
-        <!-- উপরের ডান কর্ণারে ছোট কালো PM লেখা -->
         <div id="secret-trigger">PM</div>
     </div>
 
-    <!-- গোপন লগিন পপআপ বক্স -->
     <div id="login-modal">
         <div class="login-box">
             <span class="close-modal" onclick="closeLoginModal()">&times;</span>
@@ -466,7 +447,6 @@
         </div>
     </div>
 
-    <!-- ২. মূল অ্যাপ ও হোম পেইজ -->
     <div id="app-screen">
         <header>
             <h1>🗂️ আমার গ্যালারি</h1>
@@ -474,33 +454,26 @@
         </header>
 
         <div class="container">
-            <!-- ৩টি ফোল্ডার ভিউ -->
             <div id="folders-home">
                 <div class="folder-grid">
-                    <!-- ১ম ফোল্ডার: Photo -->
-                    <div class="folder-card" onclick="openFolder('Photo')">
+                    <div class="folder-card" onclick="openFolder('Photo', 'Photo')">
                         <div class="folder-icon"><span>🖼️</span></div>
                         <div class="folder-name">Photo</div>
                     </div>
-
-                    <!-- ২য় ফোল্ডার: video -->
-                    <div class="folder-card" onclick="openFolder('video')">
+                    <div class="folder-card" onclick="openFolder('video', 'video')">
                         <div class="folder-icon"><span>🎬</span></div>
                         <div class="folder-name">video</div>
                     </div>
-
-                    <!-- ৩য় ফোল্ডার: Audio -->
-                    <div class="folder-card" onclick="openFolder('Audio')">
+                    <div class="folder-card" onclick="openFolder('Audio', 'Audio')">
                         <div class="folder-icon"><span>🎵</span></div>
                         <div class="folder-name">Audio</div>
                     </div>
                 </div>
             </div>
 
-            <!-- ফোল্ডারের ভেতরের ফাইল দেখার ভিউ -->
             <div id="media-view">
                 <div class="nav-bar">
-                    <button class="back-btn" onclick="goBackHome()">← ফিরে যান</button>
+                    <button class="back-btn" id="nav-back-btn" onclick="goBack()">← ফিরে যান</button>
                     <div id="current-folder-title">Folder</div>
                 </div>
                 <div id="media-content"></div>
@@ -508,7 +481,6 @@
         </div>
     </div>
 
-    <!-- ফুলস্ক্রিন ছবি ভিউয়ার -->
     <div id="lightbox">
         <img id="lightbox-img" src="" alt="Full View">
         <div class="lightbox-controls">
@@ -519,36 +491,32 @@
 
     <script>
         // ==========================================
-        // এখানে আপনার GITHUB তথ্য বসান (অবশ্যই পরিবর্তন করবেন)
+        // আপনার গিটহাব তথ্য এখানে বসান
         // ==========================================
         const GITHUB_USERNAME = "palashmahmod"; 
         const MEDIA_REPO_NAME = "my-media-storage"; 
         // ==========================================
 
         const CORRECT_PASSWORD = "pm111";
-        const SESSION_TIMEOUT = 10 * 60 * 1000; // ১০ মিনিট (মিলিসেকেন্ডে)
+        const SESSION_TIMEOUT = 10 * 60 * 1000; 
 
-        // কভার ফটো (photo1.jpg) সেট করা
+        let navigationHistory = []; // ফোল্ডার নেভিগেশন হিস্ট্রি ট্র্যাক করার জন্য
+
         const coverPhotoUrl = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${MEDIA_REPO_NAME}/main/Photo/photo1.jpg`;
         document.getElementById("cover-photo").src = coverPhotoUrl;
 
-        // ১. PM লেখায় ৩ বার ক্লিক ডিটেকশন
         let clickCount = 0;
         let clickTimer = null;
 
         document.getElementById("secret-trigger").addEventListener("click", function() {
             clickCount++;
             clearTimeout(clickTimer);
-
             if (clickCount === 3) {
                 clickCount = 0;
                 document.getElementById("login-modal").style.display = "flex";
                 document.getElementById("password-input").focus();
             } else {
-                // ২ সেকেন্ডের মধ্যে ৩ বার ক্লিক না করলে কাউন্ট রিসেট হবে
-                clickTimer = setTimeout(() => {
-                    clickCount = 0;
-                }, 2000);
+                clickTimer = setTimeout(() => { clickCount = 0; }, 2000);
             }
         });
 
@@ -562,7 +530,6 @@
             if (e.key === "Enter") checkPassword();
         }
 
-        // ২. পাসওয়ার্ড চেক এবং লগিন সেশন তৈরি
         function checkPassword() {
             const input = document.getElementById("password-input").value;
             if (input === CORRECT_PASSWORD) {
@@ -580,7 +547,6 @@
             document.getElementById("app-screen").style.display = "block";
         }
 
-        // ৩. লগআউট এবং ১০ মিনিট অটো-লগআউট সিস্টেম
         function logout() {
             localStorage.removeItem("isLoggedIn");
             localStorage.removeItem("loginTimestamp");
@@ -592,11 +558,8 @@
         function checkSession() {
             const isLoggedIn = localStorage.getItem("isLoggedIn");
             const loginTime = parseInt(localStorage.getItem("loginTimestamp") || "0", 10);
-
             if (isLoggedIn === "true") {
-                const currentTime = Date.now();
-                if (currentTime - loginTime > SESSION_TIMEOUT) {
-                    // ১০ মিনিট পার হয়ে গেলে অটো লগআউট
+                if (Date.now() - loginTime > SESSION_TIMEOUT) {
                     logout();
                 } else {
                     showAppScreen();
@@ -604,63 +567,175 @@
             }
         }
 
-        // পেইজ লোড হলে এবং প্রতি ৫ সেকেন্ড পরপর সেশন চেক করবে
         window.onload = checkSession;
         setInterval(checkSession, 5000);
 
-        // ৪. ফোল্ডার নেভিগেশন
         function goBackHome() {
+            navigationHistory = [];
             document.getElementById("media-view").style.display = "none";
             document.getElementById("folders-home").style.display = "block";
             document.getElementById("media-content").innerHTML = "";
         }
 
-        // ৫. GitHub API থেকে ফাইল, নাম এবং আপলোডের তারিখ সংগ্রহ
-        async function openFolder(folderName) {
-            document.getElementById("folders-home").style.display = "none";
-            document.getElementById("media-view").style.display = "block";
-            document.getElementById("current-folder-title").innerText = "📁 " + folderName;
-            
-            const contentDiv = document.getElementById("media-content");
-            contentDiv.innerHTML = `<div class="loader">ফাইল লোড হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...</div>`;
-
-            const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${MEDIA_REPO_NAME}/contents/${folderName}`;
-
-            try {
-                const response = await fetch(apiUrl);
-                if (!response.ok) throw new Error("ফোল্ডার খুঁজে পাওয়া যায়নি বা খালি রয়েছে।");
-                
-                let files = await response.json();
-
-                // Photo ফোল্ডার থেকে লগিন কভার ছবি (photo1.jpg) বাদ দেওয়া হলো
-                if (folderName === "Photo") {
-                    files = files.filter(file => file.name.toLowerCase() !== "photo1.jpg" && file.type === "file");
-                } else {
-                    files = files.filter(file => file.type === "file");
-                }
-
-                if (files.length === 0) {
-                    contentDiv.innerHTML = `<div class="loader">এই ফোল্ডারে কোনো ফাইল নেই।</div>`;
-                    return;
-                }
-
-                // প্রতিটি ফাইলের আপলোডের তারিখ বের করা
-                const filesWithDates = await Promise.all(files.map(async (file) => {
-                    const uploadDate = await getFileUploadDate(folderName, file.name);
-                    return { ...file, uploadDate };
-                }));
-
-                renderMedia(folderName, filesWithDates);
-
-            } catch (error) {
-                contentDiv.innerHTML = `<div class="loader">ত্রুটি: ফাইল লোড করা সম্ভব হয়নি। রিপোজিটরি এবং ফোল্ডারের নাম ঠিক আছে কিনা যাচাই করুন।</div>`;
+        function goBack() {
+            if (navigationHistory.length > 1) {
+                navigationHistory.pop(); // বর্তমানটা বাদ
+                const previousPath = navigationHistory[navigationHistory.length - 1];
+                const parts = previousPath.split('/');
+                const folderName = parts[parts.length - 1];
+                openFolder(previousPath, folderName);
+            } else {
+                goBackHome();
             }
         }
 
-        // GitHub Commits API থেকে আপলোডের তারিখ বের করার ফাংশন
-        async function getFileUploadDate(folderName, fileName) {
+        // ডাইনামিক ফোল্ডার এবং ফাইল লোড করার ফাংশন
+        async function openFolder(folderPath, displayName) {
+            document.getElementById("folders-home").style.display = "none";
+            document.getElementById("media-view").style.display = "block";
+            document.getElementById("current-folder-title").innerText = "📁 " + displayName;
+
+            if (navigationHistory.length === 0 || navigationHistory[navigationHistory.length - 1] !== folderPath) {
+                navigationHistory.push(folderPath);
+            }
+            
+            const contentDiv = document.getElementById("media-content");
+            contentDiv.innerHTML = `<div class="loader">লোড হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...</div>`;
+
+            const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${MEDIA_REPO_NAME}/contents/${folderPath}`;
+
             try {
-                const commitUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${MEDIA_REPO_NAME}/commits?path=${folderName}/${encodeURIComponent(fileName)}&page=1&per_page=1`;
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error("ফোল্ডার খালি বা পাওয়া যায়নি।");
+                
+                let items = await response.json();
+
+                // রুট Photo ফোল্ডার হলে photo1.jpg ফিল্টার করে বাদ দেওয়া
+                if (folderPath === "Photo") {
+                    items = items.filter(item => !(item.type === "file" && item.name.toLowerCase() === "photo1.jpg"));
+                }
+
+                if (items.length === 0) {
+                    contentDiv.innerHTML = `<div class="loader">এই ফোল্ডারে কিছু নেই।</div>`;
+                    return;
+                }
+
+                // আইটেমগুলোকে ফোল্ডার (dir) এবং ফাইলে (file) আলাদা করা
+                const subFolders = items.filter(item => item.type === "dir");
+                const files = items.filter(item => item.type === "file");
+
+                renderFolderContent(folderPath, subFolders, files);
+
+            } catch (error) {
+                contentDiv.innerHTML = `<div class="loader">ত্রুটি: কন্টেন্ট লোড করা সম্ভব হয়নি।</div>`;
+            }
+        }
+
+        function renderFolderContent(currentPath, subFolders, files) {
+            const contentDiv = document.getElementById("media-content");
+            contentDiv.innerHTML = "";
+
+            const mainContainer = document.createElement("div");
+
+            // ১. যদি সাব-ফোল্ডার থাকে তবে ফোল্ডারগুলো আগে দেখাবে
+            if (subFolders.length > 0) {
+                const folderGrid = document.createElement("div");
+                folderGrid.className = "folder-grid";
+                folderGrid.style.marginBottom = files.length > 0 ? "25px" : "0";
+
+                subFolders.forEach(folder => {
+                    const card = document.createElement("div");
+                    card.className = "folder-card";
+                    card.onclick = () => openFolder(folder.path, folder.name);
+                    card.innerHTML = `
+                        <div class="folder-icon"><span>📂</span></div>
+                        <div class="folder-name">${folder.name}</div>
+                    `;
+                    folderGrid.appendChild(card);
+                });
+                mainContainer.appendChild(folderGrid);
+            }
+
+            // ২. যদি ফাইল থাকে তবে ফাইলগুলো দেখাবে
+            if (files.length > 0) {
+                // মূল ফোল্ডার কি Photo, video নাকি Audio তা বের করা
+                const rootType = currentPath.split('/')[0];
+
+                if (rootType === "Photo") {
+                    const grid = document.createElement("div");
+                    grid.className = "photo-grid";
+
+                    files.forEach(async (file) => {
+                        const uploadDate = await getFileCommitDate(file.path);
+                        const card = document.createElement("div");
+                        card.className = "media-card";
+                        card.innerHTML = `
+                            <img class="photo-thumb" src="${file.download_url}" alt="${file.name}" onclick="openLightbox('${file.download_url}', '${file.name}')">
+                            <div class="media-info">
+                                <div class="media-title" title="${file.name}">${file.name}</div>
+                                <div class="media-date" id="date-${file.sha}">📅 ${uploadDate}</div>
+                            </div>
+                        `;
+                        grid.appendChild(card);
+                    });
+                    mainContainer.appendChild(grid);
+
+                } else if (rootType === "video") {
+                    const list = document.createElement("div");
+                    list.className = "list-container";
+
+                    files.forEach(async (file) => {
+                        const uploadDate = await getFileCommitDate(file.path);
+                        const card = document.createElement("div");
+                        card.className = "video-card";
+                        card.innerHTML = `
+                            <video class="video-player" controls preload="metadata">
+                                <source src="${file.download_url}">
+                                আপনার ব্রাউজার ভিডিও সাপোর্ট করে না।
+                            </video>
+                            <div class="media-title">${file.name}</div>
+                            <div class="card-footer">
+                                <span class="media-date">📅 ${uploadDate}</span>
+                                <a class="download-link" href="${file.download_url}" download="${file.name}" target="_blank">⬇️ ডাউনলোড</a>
+                            </div>
+                        `;
+                        list.appendChild(card);
+                    });
+                    mainContainer.appendChild(list);
+
+                } else if (rootType === "Audio") {
+                    const list = document.createElement("div");
+                    list.className = "list-container";
+
+                    files.forEach(async (file) => {
+                        const uploadDate = await getFileCommitDate(file.path);
+                        const card = document.createElement("div");
+                        card.className = "audio-card";
+                        card.innerHTML = `
+                            <div class="media-title">🎵 ${file.name}</div>
+                            <div class="media-date" style="margin-top:4px;">📅 ${uploadDate}</div>
+                            <audio class="audio-player" controls preload="metadata">
+                                <source src="${file.download_url}">
+                                আপনার ব্রাউজার অডিও সাপোর্ট করে না।
+                            </audio>
+                        `;
+                        list.appendChild(card);
+                    });
+                    mainContainer.appendChild(list);
+                }
+            }
+
+            if (subFolders.length === 0 && files.length === 0) {
+                contentDiv.innerHTML = `<div class="loader">এই ফোল্ডারটি খালি।</div>`;
+                return;
+            }
+
+            contentDiv.appendChild(mainContainer);
+        }
+
+        async function getFileCommitDate(filePath) {
+            try {
+                const commitUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${MEDIA_REPO_NAME}/commits?path=${filePath}&page=1&per_page=1`;
                 const res = await fetch(commitUrl);
                 const commits = await res.json();
                 if (commits && commits.length > 0) {
@@ -672,78 +747,11 @@
                     });
                 }
             } catch (e) {
-                return "তারিখ পাওয়া যায়নি";
+                return "তারিখ নেই";
             }
-            return "অজানা তারিখ";
+            return "অজানা";
         }
 
-        // ৬. ফাইলগুলো স্ক্রিনে সুন্দরভাবে সাজানো
-        function renderMedia(folderName, files) {
-            const contentDiv = document.getElementById("media-content");
-            contentDiv.innerHTML = "";
-
-            if (folderName === "Photo") {
-                const grid = document.createElement("div");
-                grid.className = "photo-grid";
-
-                files.forEach(file => {
-                    const card = document.createElement("div");
-                    card.className = "media-card";
-                    card.innerHTML = `
-                        <img class="photo-thumb" src="${file.download_url}" alt="${file.name}" onclick="openLightbox('${file.download_url}', '${file.name}')">
-                        <div class="media-info">
-                            <div class="media-title" title="${file.name}">${file.name}</div>
-                            <div class="media-date">📅 ${file.uploadDate}</div>
-                        </div>
-                    `;
-                    grid.appendChild(card);
-                });
-                contentDiv.appendChild(grid);
-
-            } else if (folderName === "video") {
-                const list = document.createElement("div");
-                list.className = "list-container";
-
-                files.forEach(file => {
-                    const card = document.createElement("div");
-                    card.className = "video-card";
-                    card.innerHTML = `
-                        <video class="video-player" controls preload="metadata">
-                            <source src="${file.download_url}">
-                            আপনার ব্রাউজার ভিডিও সাপোর্ট করে না।
-                        </video>
-                        <div class="media-title">${file.name}</div>
-                        <div class="card-footer">
-                            <span class="media-date">📅 ${file.uploadDate}</span>
-                            <a class="download-link" href="${file.download_url}" download="${file.name}" target="_blank">⬇️ ডাউনলোড</a>
-                        </div>
-                    `;
-                    list.appendChild(card);
-                });
-                contentDiv.appendChild(list);
-
-            } else if (folderName === "Audio") {
-                const list = document.createElement("div");
-                list.className = "list-container";
-
-                files.forEach(file => {
-                    const card = document.createElement("div");
-                    card.className = "audio-card";
-                    card.innerHTML = `
-                        <div class="media-title">🎵 ${file.name}</div>
-                        <div class="media-date" style="margin-top:4px;">📅 ${file.uploadDate}</div>
-                        <audio class="audio-player" controls preload="metadata">
-                            <source src="${file.download_url}">
-                            আপনার ব্রাউজার অডিও সাপোর্ট করে না।
-                        </audio>
-                    `;
-                    list.appendChild(card);
-                });
-                contentDiv.appendChild(list);
-            }
-        }
-
-        // ৭. ফুলস্ক্রিন ফটো লাইটবক্স ফাংশন
         function openLightbox(url, name) {
             document.getElementById("lightbox-img").src = url;
             const dlBtn = document.getElementById("lightbox-download");
