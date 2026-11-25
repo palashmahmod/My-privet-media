@@ -494,7 +494,8 @@
         // আপনার গিটহাব তথ্য এখানে বসান
         // ==========================================
         const GITHUB_USERNAME = "palashmahmod"; 
-        const MEDIA_REPO_NAME = "my-media-storage"; 
+        const MEDIA_REPO_NAME = "my-media-storage";
+         const GITHUB_TOKEN = "";
         // ==========================================
 
         const CORRECT_PASSWORD = "pm111";
@@ -605,10 +606,15 @@
             const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${MEDIA_REPO_NAME}/contents/${folderPath}`;
 
             try {
-                const response = await fetch(apiUrl);
-                if (!response.ok) throw new Error("ফোল্ডার খালি বা পাওয়া যায়নি।");
-                
-                let items = await response.json();
+        // টোকেন সহ ফেচ রিকোয়েস্ট (Headers যুক্ত করা হলো)
+        const response = await fetch(apiUrl, {
+            headers: {
+                'Authorization': `token ${GITHUB_TOKEN}`
+            }
+        });
+        if (!response.ok) throw new Error("ফোল্ডার খালি বা পাওয়া যায়নি।");
+        
+        let items = await response.json();
 
                 // রুট Photo ফোল্ডার হলে photo1.jpg ফিল্টার করে বাদ দেওয়া
                 if (folderPath === "Photo") {
@@ -734,10 +740,16 @@
         }
 
         async function getFileCommitDate(filePath) {
-            try {
-                const commitUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${MEDIA_REPO_NAME}/commits?path=${filePath}&page=1&per_page=1`;
-                const res = await fetch(commitUrl);
-                const commits = await res.json();
+        try {
+            const commitUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${MEDIA_REPO_NAME}/commits?path=${filePath}&page=1&per_page=1`;
+            
+            // এখানেও টোকেন যুক্ত করা হলো
+            const res = await fetch(commitUrl, {
+                headers: {
+                    'Authorization': `token ${GITHUB_TOKEN}`
+                }
+            });
+            const commits = await res.json();
                 if (commits && commits.length > 0) {
                     const dateObj = new Date(commits[0].commit.author.date);
                     return dateObj.toLocaleDateString('bn-BD', {
